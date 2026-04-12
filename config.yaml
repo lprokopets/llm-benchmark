@@ -1,0 +1,93 @@
+# LLM Benchmark Configuration
+# ============================
+
+providers:
+  local:
+    base_url: "http://localhost:{port}/v1"
+    api_key: "not-needed"
+
+  openrouter:
+    base_url: "https://openrouter.ai/api/v1"
+    api_key_env: "OPENROUTER_API_KEY"
+
+  moonshot:
+    base_url: "https://api.moonshot.cn/v1"
+    api_key_env: "MOONSHOT_API_KEY"
+
+models:
+  # ── Local Models ──────────────────────────────────────
+  - name: qwen35-35b-a3b
+    provider: local
+    port: 11435
+    model_id: "qwen35-35b-a3b"
+    description: "Qwen3.5-35B-A3B MoE (local, llama.cpp)"
+    type: local
+
+  - name: qwen35-27b-triattention
+    provider: local
+    port: 8091
+    model_id: "qwen35-27b-triattention"
+    description: "Qwen3.5-27B + TriAttention (local, MLX)"
+    type: local
+
+  # ── OpenRouter ────────────────────────────────────────
+  - name: deepseek-v3.2
+    provider: openrouter
+    model_id: "deepseek/deepseek-v3.2"
+    description: "DeepSeek V3.2"
+    type: cloud
+
+  - name: claude-sonnet-4.6
+    provider: openrouter
+    model_id: "anthropic/claude-sonnet-4.6"
+    description: "Claude Sonnet 4.6"
+    type: cloud
+
+  - name: gpt-5.4
+    provider: openrouter
+    model_id: "openai/gpt-5.4"
+    description: "GPT-5.4"
+    type: cloud
+
+  - name: qwen3-coder-plus
+    provider: openrouter
+    model_id: "qwen/qwen3-coder-plus"
+    description: "Qwen3 Coder Plus"
+    type: cloud
+
+  - name: glm-5.1
+    provider: openrouter
+    model_id: "z-ai/glm-5.1"
+    description: "GLM-5.1 (Z.AI)"
+    type: cloud
+
+  - name: glm-4.7-flash
+    provider: openrouter
+    model_id: "z-ai/glm-4.7-flash"
+    description: "GLM-4.7 Flash (Z.AI, fast/cheap)"
+    type: cloud
+
+  - name: kimi-k2.5-or
+    provider: openrouter
+    model_id: "moonshotai/kimi-k2.5"
+    description: "Kimi K2.5 (via OpenRouter)"
+    type: cloud
+
+  # ── Moonshot Direct ───────────────────────────────────
+  - name: kimi-k2.5
+    provider: moonshot
+    model_id: "kimi-k2.5"
+    description: "Kimi K2.5 (direct)"
+    type: cloud
+
+  - name: kimi-k2-thinking
+    provider: moonshot
+    model_id: "kimi-k2-thinking"
+    description: "Kimi K2 Thinking (direct)"
+    type: cloud
+
+# Test settings
+defaults:
+  max_tokens: 4096
+  temperature: 0.3
+  timeout: 120  # seconds per request
