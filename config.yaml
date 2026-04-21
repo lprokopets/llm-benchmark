@@ -1,8 +1,14 @@
 # LLM Benchmark Configuration
 # ============================
+# Tailscale: 100.92.163.109 (mac-studio)
+# Remote access: http://100.92.163.109:{port}/v1
 
 providers:
   local:
+    base_url: "http://localhost:{port}/v1"
+    api_key: "not-needed"
+
+  local_mlx:
     base_url: "http://localhost:{port}/v1"
     api_key: "not-needed"
 
@@ -29,6 +35,85 @@ models:
     model_id: "qwen35-27b-triattention"
     description: "Qwen3.5-27B + TriAttention (local, MLX)"
     type: local
+
+  - name: bonsai-8b-mlx
+    provider: local_mlx
+    port: 8090
+    model_id: "prism-ml/Bonsai-8B-mlx-1bit"
+    description: "Bonsai 8B MLX 1-bit"
+    type: local
+
+  - name: ternary-bonsai-8b
+    provider: local_mlx
+    port: 8092
+    model_id: "ternary-bonsai-8b"
+    description: "Ternary Bonsai 8B MLX 2-bit (1.58-bit)"
+    type: local
+
+  - name: supergemma4-26b-abliterated-multimodal
+    provider: local
+    port: 8093
+    model_id: "supergemma4-26b-abliterated-multimodal"
+    description: "SuperGemma4 26B Abliterated Multimodal"
+    type: local
+
+  - name: gemma-4-26b-a4b-it
+    provider: local
+    port: 11436
+    model_id: "gemma-4-26b-a4b-it"
+    description: "Gemma 4 26B A4B IT (local, llama.cpp)"
+    type: local
+
+  - name: qwen3-0.6b
+    provider: local
+    port: 11437
+    model_id: "qwen3-0.6b"
+    description: "Qwen3 0.6B baseline (local, llama.cpp)"
+    type: local
+
+  - name: gemma-4-19b-reap
+    provider: local
+    port: 8094
+    model_id: "gemma-4-19b-reap"
+    description: "Gemma 4 19B REAP 30% expert-pruned (local, MLX 4-bit)"
+    type: local
+
+  - name: qwopus35-27b-v3
+    provider: local
+    port: 8095
+    model_id: "qwopus35-27b-v3"
+    description: "Qwopus3.5-27B-v3 reasoning-enhanced (local, MLX 4-bit)"
+    type: local
+
+  # PARO models disabled — pad token / tokenizer incompatibility with mlx_lm
+  # - name: gemma-4-31b-paro
+  #   provider: local
+  #   port: 8096
+  #   model_id: "gemma-4-31b-paro"
+  #   description: "Gemma 4 31B ParoQuant INT4 (local, MLX)"
+  #   type: local
+  #
+  # - name: qwen35-35b-a3b-paro
+  #   provider: local
+  #   port: 8097
+  #   model_id: "qwen35-35b-a3b-paro"
+  #   description: "Qwen3.5-35B-A3B ParoQuant INT4 (local, MLX)"
+  #   type: local
+
+  - name: qwen36-35b-a3b
+    provider: local
+    port: 8098
+    model_id: "qwen36-35b-a3b"
+    description: "Qwen3.6-35B-A3B MoE (local, MLX 4-bit)"
+    type: local
+
+  # DFlash speculative decoding — slower on M1 Ultra (53.7 vs 69.7 tok/s baseline)
+  # - name: qwen36-35b-a3b-dflash
+  #   provider: local
+  #   port: 8099
+  #   model_id: "/Users/lenprokopets/dev/llm-benchmark/models/qwen36-35b-a3b-mlx-4bit"
+  #   description: "Qwen3.6-35B-A3B MoE + DFlash speculative decoding (local, MLX 4-bit)"
+  #   type: local
 
   # ── OpenRouter ────────────────────────────────────────
   - name: deepseek-v3.2
@@ -88,6 +173,6 @@ models:
 
 # Test settings
 defaults:
-  max_tokens: 4096
+  max_tokens: 16384
   temperature: 0.3
-  timeout: 120  # seconds per request
+  timeout: 600  # seconds per request (thinking models need more)

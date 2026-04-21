@@ -8,7 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODEL="$SCRIPT_DIR/models/Qwen3.5-35B-A3B-Q4_K_M.gguf"
 PORT=11435
-HOST="127.0.0.1"
+HOST="${LISTEN_HOST:-0.0.0.0}"
 LOG_DIR="$SCRIPT_DIR/logs"
 mkdir -p "$LOG_DIR"
 
@@ -60,7 +60,7 @@ case "${1:-start}" in
             -t 8 \
             --port "$PORT" \
             --host "$HOST" \
-            2>"$LOG_DIR/primary.log" &
+            >>"$LOG_DIR/primary.log" 2>&1 &
 
         wait_ready
         log "Primary server: http://localhost:$PORT/v1/chat/completions"

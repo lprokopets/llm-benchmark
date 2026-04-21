@@ -9,6 +9,7 @@ __pycache__/
 
 # Model files (too large for git)
 models/*.gguf
+models/*/
 
 # Results (regenerated locally)
 results/

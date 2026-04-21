@@ -265,6 +265,8 @@ def test(ctx, model_spec, prompt_spec, output):
         prompt_names=prompt_names,
         max_tokens=defaults.get("max_tokens", 4096),
         temperature=defaults.get("temperature", 0.3),
+        timeout=defaults.get("timeout", 300),
+        base_dir=str(base_dir),
     )
 
     if not results:
@@ -384,6 +386,14 @@ def interactive(base_dir: Path):
                 default="1",
             )
 
+            # Allow bailing out with a top-level command
+            COMMANDS = {"models", "prompts", "results", "history", "quit", "q", "exit"}
+            if model_input.strip().lower() in COMMANDS:
+                # Fall through to next loop iteration — the command will be lost,
+                # so just print a hint and restart
+                console.print("[dim]Tip: type commands at the main > prompt, not during test selection.[/dim]")
+                continue
+
             if model_input == "all":
                 selected = model_list
             else:
@@ -400,10 +410,13 @@ def interactive(base_dir: Path):
 
             # Filter to available models
             available = []
+            managed_ports = {11435, 8091, 8092, 8093, 11436, 11437, 8094, 8095, 8096, 8097, 8098}
             for m in selected:
                 provider = providers.get(m.provider)
                 if m.type == "local":
-                    if check_health(provider, m):
+                    if m.port in managed_ports:
+                        available.append(m)
+                    elif check_health(provider, m):
                         available.append(m)
                     else:
                         console.print(f"[yellow]Skipping {m.name}: server offline[/yellow]")
@@ -448,6 +461,8 @@ def interactive(base_dir: Path):
                 prompt_names=prompt_names,
                 max_tokens=defaults.get("max_tokens", 4096),
                 temperature=defaults.get("temperature", 0.3),
+                timeout=defaults.get("timeout", 300),
+                base_dir=str(base_dir),
             )
 
             if test_results:

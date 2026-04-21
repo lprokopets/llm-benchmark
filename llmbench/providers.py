@@ -115,7 +115,7 @@ def call_model(
         completion_tokens = usage.get("completion_tokens", 0)
         details = usage.get("completion_tokens_details", {})
         reasoning_tokens = details.get("reasoning_tokens", 0)
-        output_tokens = completion_tokens - reasoning_tokens if reasoning_tokens else completion_tokens
+        output_tokens = max(0, completion_tokens - reasoning_tokens) if reasoning_tokens else completion_tokens
 
         tps = output_tokens / elapsed if elapsed > 0 and output_tokens > 0 else 0
 

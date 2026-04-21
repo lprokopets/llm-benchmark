@@ -261,19 +261,46 @@ class TriAttentionHandler(BaseHTTPRequestHandler):
 
         max_tokens = body.get("max_tokens", 512)
         temperature = body.get("temperature", 0.3)
+        request_timeout = body.get("timeout", 300)
 
         # Stream mode — not supported, return full response
         stream = body.get("stream", False)
 
         try:
-            result = generate_completion(
-                model=self.model,
-                tokenizer=self.tokenizer,
-                messages=messages,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                kv_budget=self.kv_budget,
-            )
+            import threading
+            result_holder = [None]
+            error_holder = [None]
+
+            def _generate():
+                try:
+                    result_holder[0] = generate_completion(
+                        model=self.model,
+                        tokenizer=self.tokenizer,
+                        messages=messages,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        kv_budget=self.kv_budget,
+                    )
+                except Exception as e:
+                    error_holder[0] = e
+
+            gen_thread = threading.Thread(target=_generate, daemon=True)
+            gen_thread.start()
+            gen_thread.join(timeout=request_timeout)
+
+            if gen_thread.is_alive():
+                # Generation is still running — client will have timed out
+                print(f"WARNING: Generation timed out after {request_timeout}s, abandoning")
+                try:
+                    self.send_error_json(f"Generation timeout after {request_timeout}s", 504)
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
+                return
+
+            if error_holder[0]:
+                raise error_holder[0]
+
+            result = result_holder[0]
 
             # Strip internal timing from response
             timing = result.pop("_timing", None)
@@ -282,11 +309,16 @@ class TriAttentionHandler(BaseHTTPRequestHandler):
 
             self.send_json(result)
 
+        except (BrokenPipeError, ConnectionResetError):
+            print("WARNING: Client disconnected during generation")
         except Exception as e:
             print(f"ERROR: {e}")
             import traceback
             traceback.print_exc()
-            self.send_error_json(f"Generation failed: {e}", 500)
+            try:
+                self.send_error_json(f"Generation failed: {e}", 500)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
 
 
 # ───────────────────────────── Main ─────────────────────────────────────────
@@ -296,7 +328,7 @@ def main():
     parser.add_argument("--port", type=int, default=8091, help="Server port (default: 8091)")
     parser.add_argument("--model", default="mlx-community/Qwen3.5-27B-4bit", help="Model ID or path")
     parser.add_argument("--kv-budget", type=int, default=None, help="KV cache budget (default: 512)")
-    parser.add_argument("--host", default="127.0.0.1", help="Host (default: 127.0.0.1)")
+    parser.add_argument("--host", default="0.0.0.0", help="Host (default: 0.0.0.0)")
     args = parser.parse_args()
 
     kv_budget = args.kv_budget or int(os.environ.get("TRIATTN_KV_BUDGET", "512"))
