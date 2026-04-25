@@ -5,11 +5,11 @@
 
 providers:
   local:
-    base_url: "http://localhost:{port}/v1"
+    base_url: "http://100.92.163.109:{port}/v1"
     api_key: "not-needed"
 
   local_mlx:
-    base_url: "http://localhost:{port}/v1"
+    base_url: "http://100.92.163.109:{port}/v1"
     api_key: "not-needed"
 
   openrouter:
@@ -22,11 +22,11 @@ providers:
 
 models:
   # ── Local Models ──────────────────────────────────────
-  - name: qwen35-35b-a3b
+  - name: qwen36-35b-a3b
     provider: local
     port: 11435
-    model_id: "qwen35-35b-a3b"
-    description: "Qwen3.5-35B-A3B MoE (local, llama.cpp)"
+    model_id: "qwen36-35b-a3b"
+    description: "Qwen3.6-35B-A3B MoE (local, MLX 4-bit, primary)"
     type: local
 
   - name: qwen35-27b-triattention
@@ -100,20 +100,35 @@ models:
   #   description: "Qwen3.5-35B-A3B ParoQuant INT4 (local, MLX)"
   #   type: local
 
-  - name: qwen36-35b-a3b
+  # Qwen3.6-35B-A3B llama.cpp variant (for benchmark comparison)
+  # - name: qwen36-35b-a3b-llamacpp
+  #   provider: local
+  #   port: 11435
+  #   model_id: "Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf"
+  #   description: "Qwen3.6-35B-A3B MoE (local, llama.cpp Q4_K_XL)"
+  #   type: local
+
+  # Speculative Decoding (DFlash) combinations
+  - name: qwen36-35b-dflash-q2.5-1.5b
     provider: local
-    port: 8098
+    port: 11435
     model_id: "qwen36-35b-a3b"
-    description: "Qwen3.6-35B-A3B MoE (local, MLX 4-bit)"
+    description: "Qwen3.6-35B-A3B MoE + Qwen2.5-1.5B draft"
     type: local
 
-  # DFlash speculative decoding — slower on M1 Ultra (53.7 vs 69.7 tok/s baseline)
-  # - name: qwen36-35b-a3b-dflash
-  #   provider: local
-  #   port: 8099
-  #   model_id: "/Users/lenprokopets/dev/llm-benchmark/models/qwen36-35b-a3b-mlx-4bit"
-  #   description: "Qwen3.6-35B-A3B MoE + DFlash speculative decoding (local, MLX 4-bit)"
-  #   type: local
+  - name: qwen36-35b-dflash-q3-0.6b
+    provider: local
+    port: 11435
+    model_id: "qwen36-35b-a3b"
+    description: "Qwen3.6-35B-A3B MoE + Qwen3-0.6B draft"
+    type: local
+
+  - name: qwen36-35b-dflash-q3-0.8b
+    provider: local
+    port: 11435
+    model_id: "qwen36-35b-a3b"
+    description: "Qwen3.6-35B-A3B MoE + Qwen3-0.8B draft"
+    type: local
 
   # ── OpenRouter ────────────────────────────────────────
   - name: deepseek-v3.2

@@ -20,6 +20,7 @@ class ModelResponse:
     elapsed: float = 0.0
     ttft: float = 0.0  # time to first token (approx for non-streaming)
     tok_per_sec: float = 0.0
+    speculation_stats: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
 
 
@@ -119,6 +120,9 @@ def call_model(
 
         tps = output_tokens / elapsed if elapsed > 0 and output_tokens > 0 else 0
 
+        # Try to extract speculation/performance stats
+        speculation_stats = data.get("performance", {}) or data.get("speculation", {})
+
         return ModelResponse(
             content=content,
             reasoning_content=reasoning,
@@ -129,6 +133,7 @@ def call_model(
             elapsed=elapsed,
             ttft=elapsed * 0.3,  # approximate for non-streaming
             tok_per_sec=tps,
+            speculation_stats=speculation_stats if speculation_stats else None,
         )
     except Exception as e:
         return ModelResponse(content="", error=f"Parse error: {e}", elapsed=elapsed)

@@ -182,7 +182,16 @@ def _test_model(
             print(f"ERROR: {result.response.error[:80]}")
         else:
             tok_note = f" (+{result.response.reasoning_tokens} thinking)" if result.response.reasoning_tokens else ""
-            print(f"{result.score}/10  ({result.response.output_tokens} tok{tok_note}, {result.response.elapsed:.1f}s, {result.response.tok_per_sec:.1f} tok/s)")
+            spec_note = ""
+            if result.response.speculation_stats:
+                acc = result.response.speculation_stats.get("acceptance_rate")
+                if acc:
+                    spec_note = f" | spec_acc: {acc:.2f}"
+                elif "accepted_tokens" in result.response.speculation_stats:
+                    spec_note = f" | spec_acc: {result.response.speculation_stats['accepted_tokens']}"
+
+            # Elapsed time is already wall-clock time from call_model
+            print(f"{result.score}/10  ({result.response.output_tokens} tok{tok_note}, wall: {result.response.elapsed:.2f}s, {result.response.tok_per_sec:.1f} tok/s{spec_note})")
 
     return model_results
 
